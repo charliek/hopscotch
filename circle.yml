@@ -1,0 +1,13 @@
+machine:
+  java:
+    version:
+      oraclejdk8
+
+dependencies:
+  override:
+    # Using 'classes' here since it is needed eventually and triggers a download which is nice for caching
+    - ./gradlew classes testClasses
+
+test:
+  override:
+    - ./gradlew check
