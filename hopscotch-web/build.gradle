@@ -10,7 +10,6 @@ dependencies {
     // springloaded "org.springframework:springloaded:1.2.1.RELEASE"
 
     compile ratpack.dependency("guice")
-    compile ratpack.dependency("config")
     compile ratpack.dependency("remote")
     compile ratpack.dependency("codahale-metrics")
     compile ratpack.dependency("rx")
