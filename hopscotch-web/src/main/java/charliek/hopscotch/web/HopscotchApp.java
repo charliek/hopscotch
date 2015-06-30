@@ -18,27 +18,27 @@ public class HopscotchApp {
 
 	public static void main(String[] args) throws Exception {
 		ConfigData configData = ConfigData.of(d -> d
-				.env().sysProps());
+			.env().sysProps());
 
 		ServerConfig.Builder serverConfig = ServerConfig.findBaseDir()
-				.sysProps().env();
+			.sysProps().env();
 
 		RatpackServer.start(spec -> spec
-				.serverConfig(serverConfig)
-				.registry(Guice.registry(b -> b
-					.bindInstance(ConfigData.class, configData)
-					.module(HopscotchModule.class)
-					.module(JacksonModule.class)
-					.bindInstance(Service.class, new Service() {
-						@Override
-						public void onStart(StartEvent event) throws Exception {
-							RxRatpack.initialize();
-						}
-					})
-					.bind(ErrorHandler.class, DefaultDevelopmentErrorHandler.class)))
-				.handlers(c -> {
-					c.prefix("static", nested ->
-							nested.assets("/static", "index.html"));
-				}));
+			.serverConfig(serverConfig)
+			.registry(Guice.registry(b -> b
+				.bindInstance(ConfigData.class, configData)
+				.module(HopscotchModule.class)
+				.module(JacksonModule.class)
+				.bindInstance(Service.class, new Service() {
+					@Override
+					public void onStart(StartEvent event) throws Exception {
+						RxRatpack.initialize();
+					}
+				})
+				.bind(ErrorHandler.class, DefaultDevelopmentErrorHandler.class)))
+			.handlers(c -> {
+				c.prefix("static", nested ->
+					nested.assets("/static", "index.html"));
+			}));
 	}
 }
