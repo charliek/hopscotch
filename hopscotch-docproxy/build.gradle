@@ -1,0 +1,22 @@
+apply plugin: 'application'
+apply plugin: "com.github.johnrengelman.shadow"
+
+mainClassName = 'charliek.hopscotch.docproxy.DocProxyApp'
+
+dependencies {
+  compile "com.fasterxml.jackson.core:jackson-databind:2.5.2"
+  compile "org.slf4j:slf4j-api:${slf4jVersion}"
+  compile "io.netty:netty-common:${nettyVersion}"
+  compile "io.netty:netty-transport:${nettyVersion}"
+  compile "io.netty:netty-handler:${nettyVersion}"
+  compile "io.netty:netty-codec-http:${nettyVersion}"
+  compile 'ch.qos.logback:logback-classic:1.1.2'
+
+  testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+  testRuntime 'cglib:cglib-nodep:2.2.2'
+  testRuntime 'org.objenesis:objenesis:1.2'
+}
+
+shadowJar {
+  mergeServiceFiles()
+}
