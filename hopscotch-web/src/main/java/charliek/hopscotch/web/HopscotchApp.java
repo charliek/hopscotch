@@ -1,12 +1,17 @@
 package charliek.hopscotch.web;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.fasterxml.jackson.datatype.jdk7.Jdk7Module;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ratpack.config.ConfigData;
+import ratpack.error.ClientErrorHandler;
 import ratpack.error.internal.DefaultDevelopmentErrorHandler;
-import ratpack.error.internal.ErrorHandler;
 import ratpack.guice.Guice;
-import ratpack.jackson.JacksonModule;
+import ratpack.jackson.guice.JacksonModule;
 import ratpack.rx.RxRatpack;
 import ratpack.server.RatpackServer;
 import ratpack.server.ServerConfig;
@@ -28,17 +33,20 @@ public class HopscotchApp {
 			.registry(Guice.registry(b -> b
 				.bindInstance(ConfigData.class, configData)
 				.module(HopscotchModule.class)
-				.module(JacksonModule.class)
+				.module(JacksonModule.class, c -> c
+					.modules(new Jdk7Module(), new Jdk8Module(), new GuavaModule(), new JSR310Module())
+					.withMapper(m -> m.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES))
+					.prettyPrint(false))
 				.bindInstance(Service.class, new Service() {
 					@Override
 					public void onStart(StartEvent event) throws Exception {
 						RxRatpack.initialize();
 					}
 				})
-				.bind(ErrorHandler.class, DefaultDevelopmentErrorHandler.class)))
+				.bind(ClientErrorHandler.class, DefaultDevelopmentErrorHandler.class)))
 			.handlers(c -> {
 				c.prefix("static", nested ->
-					nested.assets("/static", "index.html"));
+					nested.files(f -> f.dir("static").indexFiles("index.html")));
 			}));
 	}
 }
