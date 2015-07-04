@@ -1,4 +1,4 @@
-package charliek.hopscotch.docproxy;
+package charliek.hopscotch.docproxy.rx;
 
 import io.netty.channel.EventLoop;
 import rx.Scheduler;

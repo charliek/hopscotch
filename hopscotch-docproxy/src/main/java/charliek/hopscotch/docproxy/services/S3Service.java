@@ -1,5 +1,6 @@
-package charliek.hopscotch.docproxy;
+package charliek.hopscotch.docproxy.services;
 
+import charliek.hopscotch.docproxy.dto.RenderObject;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
@@ -26,6 +27,8 @@ public class S3Service {
 	}
 
 	public Observable<RenderObject> getRenderObject(String bucket, String path) {
+		// The blocking version for netty demo
+//		return Observable.just(blockingRenderObject(bucket, path));
 		return Async.fromCallable(() -> blockingRenderObject(bucket, path), Schedulers.io());
 	}
 

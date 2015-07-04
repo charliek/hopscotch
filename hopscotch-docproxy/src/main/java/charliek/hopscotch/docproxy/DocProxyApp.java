@@ -1,5 +1,6 @@
 package charliek.hopscotch.docproxy;
 
+import charliek.hopscotch.docproxy.dto.Config;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import io.netty.bootstrap.ServerBootstrap;

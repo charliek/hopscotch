@@ -1,4 +1,4 @@
-package charliek.hopscotch.docproxy;
+package charliek.hopscotch.docproxy.dto;
 
 import com.beust.jcommander.Parameter;
 

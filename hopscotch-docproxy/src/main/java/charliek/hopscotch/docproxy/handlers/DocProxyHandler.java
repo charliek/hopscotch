@@ -1,5 +1,9 @@
-package charliek.hopscotch.docproxy;
+package charliek.hopscotch.docproxy.handlers;
 
+import charliek.hopscotch.docproxy.dto.Config;
+import charliek.hopscotch.docproxy.dto.RenderObject;
+import charliek.hopscotch.docproxy.services.S3Service;
+import charliek.hopscotch.docproxy.rx.EventLoopScheduler;
 import com.google.common.base.Preconditions;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -74,7 +78,6 @@ public class DocProxyHandler extends SimpleChannelInboundHandler<HttpRequest> {
 	}
 
 	static Observable<String> renderResponse(ChannelHandlerContext ctx, HttpRequest req, RenderObject renderObject) {
-		LOG.error("Rendering response for path");
 		byte[] bytes = renderObject.getBytes();
 		FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, renderObject.getStatus(), Unpooled.wrappedBuffer(bytes));
 		response.headers().set(CONTENT_TYPE, renderObject.getContentType());

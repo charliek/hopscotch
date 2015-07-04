@@ -1,4 +1,4 @@
-package charliek.hopscotch.docproxy;
+package charliek.hopscotch.docproxy.dto;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 

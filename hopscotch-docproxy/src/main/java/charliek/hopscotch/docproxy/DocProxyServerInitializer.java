@@ -1,5 +1,8 @@
 package charliek.hopscotch.docproxy;
 
+import charliek.hopscotch.docproxy.dto.Config;
+import charliek.hopscotch.docproxy.handlers.DocProxyHandler;
+import charliek.hopscotch.docproxy.services.S3Service;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
