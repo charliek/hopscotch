@@ -4,13 +4,18 @@ apply plugin: "com.github.johnrengelman.shadow"
 mainClassName = 'charliek.hopscotch.docproxy.DocProxyApp'
 
 dependencies {
-  compile "com.fasterxml.jackson.core:jackson-databind:2.5.2"
-  compile "org.slf4j:slf4j-api:${slf4jVersion}"
   compile "io.netty:netty-common:${nettyVersion}"
   compile "io.netty:netty-transport:${nettyVersion}"
   compile "io.netty:netty-handler:${nettyVersion}"
   compile "io.netty:netty-codec-http:${nettyVersion}"
+
+  compile 'io.reactivex:rxjava:1.0.12'
+  compile 'io.reactivex:rxjava-guava:1.0.2'
+  compile 'io.reactivex:rxjava-async-util:0.21.0'
+
+  compile "org.slf4j:slf4j-api:${slf4jVersion}"
   compile 'ch.qos.logback:logback-classic:1.1.2'
+  compile "com.fasterxml.jackson.core:jackson-databind:2.5.2"
   compile 'com.amazonaws:aws-java-sdk-s3:1.10.2'
   compile 'com.google.guava:guava:18.0'
   compile 'com.beust:jcommander:1.47'
