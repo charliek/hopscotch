@@ -1,23 +1,33 @@
 package charliek.hopscotch.docproxy.handlers;
 
-import charliek.hopscotch.docproxy.dto.Config;
+import charliek.hopscotch.docproxy.dto.AppConfig;
 import charliek.hopscotch.docproxy.dto.RenderObject;
-import charliek.hopscotch.docproxy.services.S3Service;
+import charliek.hopscotch.docproxy.dto.S3Host;
 import charliek.hopscotch.docproxy.rx.EventLoopScheduler;
+import charliek.hopscotch.docproxy.services.GithubService;
+import charliek.hopscotch.docproxy.services.S3Service;
 import com.google.common.base.Preconditions;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
+import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.util.AsciiString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
 
+import java.time.Duration;
+import java.util.List;
+import java.util.Optional;
+
 import static io.netty.handler.codec.http.HttpHeaderNames.HOST;
+import static io.netty.handler.codec.http.HttpHeaderNames.LOCATION;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONTINUE;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.FOUND;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public class DocProxyHandler extends SimpleChannelInboundHandler<HttpRequest> {
@@ -29,22 +39,18 @@ public class DocProxyHandler extends SimpleChannelInboundHandler<HttpRequest> {
 	private static final AsciiString KEEP_ALIVE = new AsciiString("keep-alive");
 
 	private final S3Service s3Service;
-	private final Config config;
+	private final GithubService githubService;
+	private final AppConfig appConfig;
 
-	public DocProxyHandler(S3Service s3Service, Config config) {
+	public DocProxyHandler(S3Service s3Service, GithubService githubService, AppConfig appConfig) {
 		this.s3Service = s3Service;
-		this.config = config;
+		this.githubService = githubService;
+		this.appConfig = appConfig;
 	}
 
 	@Override
 	public void channelReadComplete(ChannelHandlerContext ctx) {
 		ctx.flush();
-	}
-
-	public String getBucket(HttpRequest req) {
-		String host = req.headers().get(HOST);
-		Preconditions.checkNotNull(host, "Host header is required");
-		return config.getBucket();
 	}
 
 	@Override
@@ -54,17 +60,51 @@ public class DocProxyHandler extends SimpleChannelInboundHandler<HttpRequest> {
 		}
 		HttpMethod method = req.method();
 		if (!method.equals(HttpMethod.GET)) {
-			renderError(ctx, req, new IllegalArgumentException("Invalid host name"));
+			renderError(ctx, req, new IllegalArgumentException("Only get requests supported"));
+			return;
+		}
+		String host = req.headers().get(HOST);
+		Optional<S3Host> s3Host = appConfig.getConfiguredHost(host);
+		if (!s3Host.isPresent()) {
+			renderError(ctx, req, new IllegalArgumentException(String.format("Host name '%s' not configured", host)));
 			return;
 		}
 		QueryStringDecoder queryStringDecoder = new QueryStringDecoder(req.uri());
 		String path = queryStringDecoder.path();
 
-		s3Service.getRenderObject(getBucket(req), pathToS3Path(path))
-			.subscribeOn(new EventLoopScheduler(ctx))
-			.flatMap(renderObject -> renderResponse(ctx, req, renderObject))
-			.doOnError(t -> renderError(ctx, req, t))
-			.subscribe();
+		if (path.equals(GithubAuthHandler.AUTH_PATH)) {
+			List<String> params = queryStringDecoder.parameters().get("code");
+			if (params.size() == 1) {
+				String code = params.get(0);
+				githubService.authRequest(code, s3Host.get())
+					.subscribeOn(new EventLoopScheduler(ctx))
+					.flatMap(token -> {
+						Preconditions.checkNotNull(token);
+						FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, FOUND);
+						response.headers().set(LOCATION, "/test.html");
+						response.headers().set(CONTENT_LENGTH, 0);
+						response.headers().set(CONTENT_TYPE, "text/html");
+						DefaultCookie cookie = new DefaultCookie(GithubAuthHandler.AUTH_COOKIE, token);
+						cookie.setHttpOnly(true);
+						cookie.setMaxAge(Duration.ofDays(14).getSeconds());
+						cookie.setPath("/");
+						response.headers().add("Set-Cookie",
+							ServerCookieEncoder.STRICT.encode(cookie));
+						render(ctx, req, response);
+						return Observable.empty();
+					})
+					.doOnError(t -> renderError(ctx, req, t))
+					.subscribe();
+			} else {
+				renderError(ctx, req, new IllegalArgumentException("Missing code param"));
+			}
+		} else {
+			s3Service.getRenderObject(s3Host.get().getBucket(), pathToS3Path(path))
+				.subscribeOn(new EventLoopScheduler(ctx))
+				.flatMap(renderObject -> renderResponse(ctx, req, renderObject))
+				.doOnError(t -> renderError(ctx, req, t))
+				.subscribe();
+		}
 	}
 
 	static void render(ChannelHandlerContext ctx, HttpRequest req, FullHttpResponse response) {
@@ -85,7 +125,6 @@ public class DocProxyHandler extends SimpleChannelInboundHandler<HttpRequest> {
 		render(ctx, req, response);
 		return Observable.just("rendered");
 	}
-
 
 	static Observable<String> renderError(ChannelHandlerContext ctx, HttpRequest req, Throwable t) {
 		LOG.error("Rendering error page due to error", t);

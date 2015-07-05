@@ -1,6 +1,9 @@
 package charliek.hopscotch.docproxy;
 
-import charliek.hopscotch.docproxy.dto.Config;
+import charliek.hopscotch.docproxy.dto.AppConfig;
+import charliek.hopscotch.docproxy.dto.CliConfig;
+import charliek.hopscotch.docproxy.dto.ConfigurationLoader;
+import charliek.hopscotch.docproxy.services.GithubService;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import io.netty.bootstrap.ServerBootstrap;
@@ -17,7 +20,7 @@ import org.slf4j.LoggerFactory;
 public class DocProxyApp {
 	private static final Logger LOG = LoggerFactory.getLogger(DocProxyApp.class);
 
-	private Config config;
+	private CliConfig cliConfig;
 
 	public DocProxyApp() {
 	}
@@ -28,18 +31,20 @@ public class DocProxyApp {
 
 	public void run(String[] args) throws Exception {
 		parseCli(args);
+		AppConfig config = ConfigurationLoader.loadAppConfig(cliConfig.getConfigLocation());
 		EventLoopGroup bossGroup = new NioEventLoopGroup(1);
 		EventLoopGroup workerGroup = new NioEventLoopGroup();
+		GithubService githubService = new GithubService(workerGroup);
 		try {
 			ServerBootstrap b = new ServerBootstrap();
 			b.option(ChannelOption.SO_BACKLOG, 1024);
 			b.group(bossGroup, workerGroup)
 				.channel(NioServerSocketChannel.class)
 				.handler(new LoggingHandler(LogLevel.INFO))
-				.childHandler(new DocProxyServerInitializer(config));
+				.childHandler(new DocProxyServerInitializer(githubService, config));
 
-			Channel ch = b.bind(config.getPort()).sync().channel();
-			LOG.info("Open your web browser and navigate to http://127.0.0.1:{}/", config.getPort());
+			Channel ch = b.bind(cliConfig.getPort()).sync().channel();
+			LOG.info("Open your web browser and navigate to http://127.0.0.1:{}/", cliConfig.getPort());
 			ch.closeFuture().sync();
 		} finally {
 			bossGroup.shutdownGracefully();
@@ -48,8 +53,8 @@ public class DocProxyApp {
 	}
 
 	private void parseCli(String[] args) {
-		config = new Config();
-		JCommander commander = new JCommander(config);
+		cliConfig = new CliConfig();
+		JCommander commander = new JCommander(cliConfig);
 		try {
 			commander.parse(args);
 		} catch (ParameterException e) {

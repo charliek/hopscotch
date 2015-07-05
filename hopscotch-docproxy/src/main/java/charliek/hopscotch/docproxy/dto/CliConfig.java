@@ -2,10 +2,10 @@ package charliek.hopscotch.docproxy.dto;
 
 import com.beust.jcommander.Parameter;
 
-public class Config {
+public class CliConfig {
 
-	@Parameter(names = "-bucket", required = false, description = "The s3 bucket to proxy")
-	private String bucket = "charliek-repodocs";
+	@Parameter(names = "-config", required = true, description = "The location of the yaml configuration file")
+	private String configLocation;
 
 	@Parameter(names = "-port", required = false, description = "The port to run on")
 	private int port = 9999;
@@ -14,7 +14,7 @@ public class Config {
 		return port;
 	}
 
-	public String getBucket() {
-		return bucket;
+	public String getConfigLocation() {
+		return configLocation;
 	}
 }
