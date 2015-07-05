@@ -39,12 +39,10 @@ public class DocProxyHandler extends SimpleChannelInboundHandler<HttpRequest> {
 	private static final AsciiString KEEP_ALIVE = new AsciiString("keep-alive");
 
 	private final S3Service s3Service;
-	private final GithubService githubService;
 	private final AppConfig appConfig;
 
-	public DocProxyHandler(S3Service s3Service, GithubService githubService, AppConfig appConfig) {
+	public DocProxyHandler(S3Service s3Service, AppConfig appConfig) {
 		this.s3Service = s3Service;
-		this.githubService = githubService;
 		this.appConfig = appConfig;
 	}
 
@@ -71,40 +69,11 @@ public class DocProxyHandler extends SimpleChannelInboundHandler<HttpRequest> {
 		}
 		QueryStringDecoder queryStringDecoder = new QueryStringDecoder(req.uri());
 		String path = queryStringDecoder.path();
-
-		if (path.equals(GithubAuthHandler.AUTH_PATH)) {
-			List<String> params = queryStringDecoder.parameters().get("code");
-			if (params.size() == 1) {
-				String code = params.get(0);
-				githubService.authRequest(code, s3Host.get())
-					.subscribeOn(new EventLoopScheduler(ctx))
-					.flatMap(token -> {
-						Preconditions.checkNotNull(token);
-						FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, FOUND);
-						response.headers().set(LOCATION, "/test.html");
-						response.headers().set(CONTENT_LENGTH, 0);
-						response.headers().set(CONTENT_TYPE, "text/html");
-						DefaultCookie cookie = new DefaultCookie(GithubAuthHandler.AUTH_COOKIE, token);
-						cookie.setHttpOnly(true);
-						cookie.setMaxAge(Duration.ofDays(14).getSeconds());
-						cookie.setPath("/");
-						response.headers().add("Set-Cookie",
-							ServerCookieEncoder.STRICT.encode(cookie));
-						render(ctx, req, response);
-						return Observable.empty();
-					})
-					.doOnError(t -> renderError(ctx, req, t))
-					.subscribe();
-			} else {
-				renderError(ctx, req, new IllegalArgumentException("Missing code param"));
-			}
-		} else {
-			s3Service.getRenderObject(s3Host.get().getBucket(), pathToS3Path(path))
-				.subscribeOn(new EventLoopScheduler(ctx))
-				.flatMap(renderObject -> renderResponse(ctx, req, renderObject))
-				.doOnError(t -> renderError(ctx, req, t))
-				.subscribe();
-		}
+		s3Service.getRenderObject(s3Host.get().getBucket(), pathToS3Path(path))
+			.subscribeOn(new EventLoopScheduler(ctx))
+			.flatMap(renderObject -> renderResponse(ctx, req, renderObject))
+			.doOnError(t -> renderError(ctx, req, t))
+			.subscribe();
 	}
 
 	static void render(ChannelHandlerContext ctx, HttpRequest req, FullHttpResponse response) {

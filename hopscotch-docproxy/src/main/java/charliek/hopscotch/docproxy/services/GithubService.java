@@ -1,6 +1,5 @@
 package charliek.hopscotch.docproxy.services;
 
-import charliek.hopscotch.docproxy.dto.AppConfig;
 import charliek.hopscotch.docproxy.dto.GithubCredentials;
 import charliek.hopscotch.docproxy.services.github.Auth;
 import io.netty.bootstrap.Bootstrap;

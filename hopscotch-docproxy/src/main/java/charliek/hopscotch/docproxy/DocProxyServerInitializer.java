@@ -29,7 +29,7 @@ public class DocProxyServerInitializer extends ChannelInitializer<SocketChannel>
 		ChannelPipeline p = ch.pipeline();
 		p.addLast(new HttpServerCodec());
 		p.addLast(new HttpObjectAggregator(1048576));
-		p.addLast(new GithubAuthHandler(appConfig));
-		p.addLast(new DocProxyHandler(s3Service, githubService, appConfig));
+		p.addLast(new GithubAuthHandler(githubService, appConfig));
+		p.addLast(new DocProxyHandler(s3Service, appConfig));
 	}
 }
