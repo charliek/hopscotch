@@ -1,6 +1,7 @@
 package charliek.hopscotch.docproxy.services;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
+import charliek.hopscotch.docproxy.utils.ObjectMapperBuilder;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -10,15 +11,14 @@ import rx.subjects.Subject;
 import java.nio.charset.StandardCharsets;
 
 public class GithubClientHandler extends SimpleChannelInboundHandler<FullHttpResponse> {
-	private static final ObjectMapper mapper = new ObjectMapper()
-		.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+	private static final ObjectMapper mapper = ObjectMapperBuilder.build();
 
 	private final Subject subscriber;
-	private final Class klass;
+	private final TypeReference ref;
 
-	public GithubClientHandler(Subject subscriber, Class klass) {
+	public GithubClientHandler(Subject subscriber, TypeReference ref) {
 		this.subscriber = subscriber;
-		this.klass = klass;
+		this.ref = ref;
 	}
 
 	@Override
@@ -26,7 +26,7 @@ public class GithubClientHandler extends SimpleChannelInboundHandler<FullHttpRes
 	public void channelRead0(ChannelHandlerContext ctx, FullHttpResponse msg) {
 		try {
 			String payload = msg.content().toString(StandardCharsets.UTF_8);
-			Object o = mapper.readValue(payload, klass);
+			Object o = mapper.readValue(payload, ref);
 			subscriber.onNext(o);
 			subscriber.onCompleted();
 			ctx.close();

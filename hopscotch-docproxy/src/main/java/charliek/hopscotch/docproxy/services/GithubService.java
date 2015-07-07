@@ -1,7 +1,14 @@
 package charliek.hopscotch.docproxy.services;
 
 import charliek.hopscotch.docproxy.dto.GithubCredentials;
+import charliek.hopscotch.docproxy.dto.GithubRequirement;
+import charliek.hopscotch.docproxy.dto.S3Host;
+import charliek.hopscotch.docproxy.exceptions.HopscotchException;
 import charliek.hopscotch.docproxy.services.github.Auth;
+import charliek.hopscotch.docproxy.services.github.AuthCookie;
+import charliek.hopscotch.docproxy.services.github.Org;
+import charliek.hopscotch.docproxy.services.github.User;
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -23,6 +30,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GithubService {
@@ -48,6 +56,32 @@ public class GithubService {
 		}
 	}
 
+	public boolean isValidLogin(S3Host host, AuthCookie authCookie) {
+		for (GithubRequirement requirement : host.getRequired()) {
+			switch (requirement.getType()) {
+				case "org":
+					boolean matchedOrg = authCookie.getOrgNames()
+						.stream()
+						.filter(orgName -> orgName.equals(requirement.getName()))
+						.findAny()
+						.isPresent();
+					if (! matchedOrg) {
+						return false;
+					}
+					break;
+				case "user":
+					if (! authCookie.getUserName().equals(requirement.getName())) {
+						return false;
+					}
+					break;
+				default:
+					throw new HopscotchException(String.format("Unknown github requirement type of %s",
+						requirement.getName()));
+			}
+		}
+		return true;
+	}
+
 	@FunctionalInterface
 	private interface JsonRequest {
 		HttpRequest buildRequest();
@@ -59,11 +93,21 @@ public class GithubService {
 		params.put("client_secret", creds.getClientSecret());
 		params.put("code", code);
 		String url = "https://github.com/login/oauth/access_token";
-		return postApiCall(url, params, Auth.class)
+		return postApiCall(url, params, new TypeReference<Auth>(){})
 			.map(Auth::getAccessToken);
 	}
 
-	private <T> Observable<T> doRequest(URI uri, Class<T> klass, JsonRequest req) {
+	public Observable<User> getUser(String accessToken) {
+		String url = String.format("https://api.github.com/user?access_token=%s", accessToken);
+		return getApiCall(url, new TypeReference<User>(){});
+	}
+
+	public Observable<List<Org>> getOrgs(String userName, String accessToken) {
+		String url = String.format("https://api.github.com/users/%s/orgs?access_token=%s", userName, accessToken);
+		return getApiCall(url, new TypeReference<List<Org>>(){});
+	}
+
+	private <T> Observable<T> doRequest(URI uri, TypeReference<T> ref, JsonRequest req) {
 		// TODO there is a race condition since the publish subject might not be subscribed to yet
 		PublishSubject<T> subject = PublishSubject.create();
 		String scheme = uri.getScheme();
@@ -79,7 +123,7 @@ public class GithubService {
 		Bootstrap b = new Bootstrap();
 		b.group(group)
 			.channel(NioSocketChannel.class)
-			.handler(new GithubClientInitializer(sslCtx, subject, klass));
+			.handler(new GithubClientInitializer(sslCtx, subject, ref));
 		b.connect(host, port).addListener((ChannelFuture f) -> {
 			if (f.isSuccess()) {
 				Channel ch = f.channel();
@@ -97,7 +141,7 @@ public class GithubService {
 		return subject;
 	}
 
-	public <T> Observable<T> getApiCall(String url, Class<T> klass) {
+	public <T> Observable<T> getApiCall(String url, TypeReference<T> ref) {
 		// TODO there is a race condition since the publish subject might not be subscribed to yet
 		URI uri;
 		try {
@@ -105,7 +149,7 @@ public class GithubService {
 		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException(e);
 		}
-		return doRequest(uri, klass, () -> {
+		return doRequest(uri, ref, () -> {
 			HttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri.toString());
 			request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
 			request.headers().set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
@@ -115,7 +159,7 @@ public class GithubService {
 		});
 	}
 
-	public <T> Observable<T> postApiCall(String url, Map<String, String> params, Class<T> klass) {
+	public <T> Observable<T> postApiCall(String url, Map<String, String> params, TypeReference<T> ref) {
 		// TODO there is a race condition since the publish subject might not be subscribed to yet
 		URI uri;
 		try {
@@ -123,7 +167,7 @@ public class GithubService {
 		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException(e);
 		}
-		return doRequest(uri, klass, () -> {
+		return doRequest(uri, ref, () -> {
 			StringBuilder sb = new StringBuilder();
 			params.forEach((k, v) -> {
 				sb.append(encodeValue(k))
@@ -138,7 +182,7 @@ public class GithubService {
 			request.headers().set(HttpHeaderNames.USER_AGENT, "repodoc-netty");
 			request.headers().set(HttpHeaderNames.ACCEPT, "application/json");
 			request.headers().set(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED);
-			request.headers().set(HttpHeaders.Names.CONTENT_LENGTH, cb.readableBytes());
+			request.headers().set(HttpHeaderNames.CONTENT_LENGTH, cb.readableBytes());
 			return request;
 		});
 	}

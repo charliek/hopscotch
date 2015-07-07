@@ -1,5 +1,6 @@
 package charliek.hopscotch.docproxy.services;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -13,12 +14,12 @@ public class GithubClientInitializer extends ChannelInitializer<SocketChannel> {
 
 	private final SslContext sslCtx;
 	private final Subject subscriber;
-	private final Class klass;
+	private final TypeReference ref;
 
-	public GithubClientInitializer(SslContext sslCtx, Subject subscriber, Class klass) {
+	public GithubClientInitializer(SslContext sslCtx, Subject subscriber, TypeReference ref) {
 		this.sslCtx = sslCtx;
 		this.subscriber = subscriber;
-		this.klass = klass;
+		this.ref = ref;
 	}
 
 	@Override
@@ -30,6 +31,6 @@ public class GithubClientInitializer extends ChannelInitializer<SocketChannel> {
 		p.addLast(new HttpClientCodec());
 		p.addLast(new HttpContentDecompressor());
 		p.addLast(new HttpObjectAggregator(1048576));
-		p.addLast(new GithubClientHandler(subscriber, klass));
+		p.addLast(new GithubClientHandler(subscriber, ref));
 	}
 }

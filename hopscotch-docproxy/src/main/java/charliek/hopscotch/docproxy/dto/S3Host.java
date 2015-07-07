@@ -1,12 +1,14 @@
 package charliek.hopscotch.docproxy.dto;
 
+import charliek.hopscotch.docproxy.services.EncryptionService;
+import com.google.common.collect.Lists;
 import org.hibernate.validator.constraints.NotBlank;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.util.List;
+
 public class S3Host implements GithubCredentials {
-
-	@NotBlank
-	private String host;
-
 	@NotBlank
 	private String clientId;
 
@@ -16,12 +18,24 @@ public class S3Host implements GithubCredentials {
 	@NotBlank
 	private String bucket;
 
-	public String getHost() {
-		return host;
+	@NotBlank
+	private String passphrase;
+
+	@NotBlank
+	private String salt;
+
+	@Valid
+	@NotNull
+	private List<GithubRequirement> required = Lists.newArrayList();
+
+	private EncryptionService encryptionService;
+
+	public void init() {
+		encryptionService = new EncryptionService(passphrase, salt);
 	}
 
-	public void setHost(String host) {
-		this.host = host;
+	public EncryptionService getEncryptionService() {
+		return encryptionService;
 	}
 
 	public String getClientId() {
@@ -46,5 +60,29 @@ public class S3Host implements GithubCredentials {
 
 	public void setBucket(String bucket) {
 		this.bucket = bucket;
+	}
+
+	public String getPassphrase() {
+		return passphrase;
+	}
+
+	public void setPassphrase(String passphrase) {
+		this.passphrase = passphrase;
+	}
+
+	public String getSalt() {
+		return salt;
+	}
+
+	public void setSalt(String salt) {
+		this.salt = salt;
+	}
+
+	public List<GithubRequirement> getRequired() {
+		return required;
+	}
+
+	public void setRequired(List<GithubRequirement> required) {
+		this.required = required;
 	}
 }

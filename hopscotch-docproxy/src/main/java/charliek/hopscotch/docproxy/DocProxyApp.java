@@ -31,7 +31,7 @@ public class DocProxyApp {
 
 	public void run(String[] args) throws Exception {
 		parseCli(args);
-		AppConfig config = ConfigurationLoader.loadAppConfig(cliConfig.getConfigLocation());
+		AppConfig config = ConfigurationLoader.loadAppConfig(cliConfig.getConfigLocation()).init();
 		EventLoopGroup bossGroup = new NioEventLoopGroup(1);
 		EventLoopGroup workerGroup = new NioEventLoopGroup();
 		GithubService githubService = new GithubService(workerGroup);
