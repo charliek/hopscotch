@@ -1,9 +1,9 @@
 package charliek.hopscotch.docproxy;
 
-import charliek.hopscotch.docproxy.dto.AppConfig;
-import charliek.hopscotch.docproxy.dto.CliConfig;
-import charliek.hopscotch.docproxy.dto.ConfigurationLoader;
-import charliek.hopscotch.docproxy.services.GithubService;
+import charliek.hopscotch.docproxy.config.AppConfig;
+import charliek.hopscotch.docproxy.config.CliConfig;
+import charliek.hopscotch.docproxy.config.ConfigurationLoader;
+import charliek.hopscotch.docproxy.github.services.GithubService;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import io.netty.bootstrap.ServerBootstrap;

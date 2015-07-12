@@ -1,9 +1,8 @@
-package charliek.hopscotch.docproxy.handlers;
+package charliek.hopscotch.docproxy.s3;
 
-import charliek.hopscotch.docproxy.dto.AppConfig;
-import charliek.hopscotch.docproxy.dto.S3Host;
+import charliek.hopscotch.docproxy.config.AppConfig;
+import charliek.hopscotch.docproxy.config.S3Host;
 import charliek.hopscotch.docproxy.rx.EventLoopScheduler;
-import charliek.hopscotch.docproxy.services.S3Service;
 import charliek.hopscotch.docproxy.utils.RenderUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;

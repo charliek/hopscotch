@@ -1,6 +1,5 @@
 package charliek.hopscotch.docproxy.utils;
 
-import charliek.hopscotch.docproxy.dto.RenderObject;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;

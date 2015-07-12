@@ -1,7 +1,10 @@
-package charliek.hopscotch.docproxy.services.github;
+package charliek.hopscotch.docproxy.github.dto;
 
-public class Org {
-	String login;
+public class User {
+	private String login;
+
+	public User() {
+	}
 
 	public String getLogin() {
 		return login;

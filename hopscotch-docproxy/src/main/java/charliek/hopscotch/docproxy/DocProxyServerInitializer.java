@@ -1,11 +1,10 @@
 package charliek.hopscotch.docproxy;
 
-import charliek.hopscotch.docproxy.dto.AppConfig;
-import charliek.hopscotch.docproxy.dto.CliConfig;
-import charliek.hopscotch.docproxy.handlers.DocProxyHandler;
-import charliek.hopscotch.docproxy.handlers.GithubAuthHandler;
-import charliek.hopscotch.docproxy.services.GithubService;
-import charliek.hopscotch.docproxy.services.S3Service;
+import charliek.hopscotch.docproxy.config.AppConfig;
+import charliek.hopscotch.docproxy.s3.DocProxyHandler;
+import charliek.hopscotch.docproxy.github.GithubAuthHandler;
+import charliek.hopscotch.docproxy.github.services.GithubService;
+import charliek.hopscotch.docproxy.s3.S3Service;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;

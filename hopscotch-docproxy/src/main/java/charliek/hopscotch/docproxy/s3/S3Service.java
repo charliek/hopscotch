@@ -1,6 +1,6 @@
-package charliek.hopscotch.docproxy.services;
+package charliek.hopscotch.docproxy.s3;
 
-import charliek.hopscotch.docproxy.dto.RenderObject;
+import charliek.hopscotch.docproxy.utils.RenderObject;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;

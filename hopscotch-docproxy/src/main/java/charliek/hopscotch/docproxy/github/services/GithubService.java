@@ -1,13 +1,13 @@
-package charliek.hopscotch.docproxy.services;
+package charliek.hopscotch.docproxy.github.services;
 
-import charliek.hopscotch.docproxy.dto.GithubCredentials;
-import charliek.hopscotch.docproxy.dto.GithubRequirement;
-import charliek.hopscotch.docproxy.dto.S3Host;
+import charliek.hopscotch.docproxy.config.GithubCredentials;
+import charliek.hopscotch.docproxy.config.GithubRequirement;
+import charliek.hopscotch.docproxy.config.S3Host;
 import charliek.hopscotch.docproxy.exceptions.HopscotchException;
-import charliek.hopscotch.docproxy.services.github.Auth;
-import charliek.hopscotch.docproxy.services.github.AuthCookie;
-import charliek.hopscotch.docproxy.services.github.Org;
-import charliek.hopscotch.docproxy.services.github.User;
+import charliek.hopscotch.docproxy.github.dto.Auth;
+import charliek.hopscotch.docproxy.github.dto.AuthCookie;
+import charliek.hopscotch.docproxy.github.dto.Org;
+import charliek.hopscotch.docproxy.github.dto.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;

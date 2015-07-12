@@ -1,4 +1,4 @@
-package charliek.hopscotch.docproxy.dto;
+package charliek.hopscotch.docproxy.config;
 
 import org.hibernate.validator.constraints.NotBlank;
 

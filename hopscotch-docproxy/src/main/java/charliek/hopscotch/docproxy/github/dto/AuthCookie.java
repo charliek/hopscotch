@@ -1,4 +1,4 @@
-package charliek.hopscotch.docproxy.services.github;
+package charliek.hopscotch.docproxy.github.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

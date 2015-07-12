@@ -1,6 +1,6 @@
-package charliek.hopscotch.docproxy.dto;
+package charliek.hopscotch.docproxy.config;
 
-import charliek.hopscotch.docproxy.services.EncryptionService;
+import charliek.hopscotch.docproxy.github.services.EncryptionService;
 import com.google.common.collect.Lists;
 import org.hibernate.validator.constraints.NotBlank;
 

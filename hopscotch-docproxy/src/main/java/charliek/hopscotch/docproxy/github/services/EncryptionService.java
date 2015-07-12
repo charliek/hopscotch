@@ -1,4 +1,4 @@
-package charliek.hopscotch.docproxy.services;
+package charliek.hopscotch.docproxy.github.services;
 
 import charliek.hopscotch.docproxy.exceptions.HopscotchException;
 
@@ -7,11 +7,6 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 import java.util.Base64;
 
@@ -52,7 +47,7 @@ public class EncryptionService {
 	public byte[] encrypt(byte[] bytes) {
 		try {
 			return encryptor.doFinal(bytes);
-		} catch (IllegalBlockSizeException|BadPaddingException e) {
+		} catch (IllegalBlockSizeException | BadPaddingException e) {
 			throw new HopscotchException("Error when encrypting bytes", e);
 		}
 	}
@@ -66,7 +61,7 @@ public class EncryptionService {
 	public byte[] decrypt(byte[] bytes) {
 		try {
 			return decryptor.doFinal(bytes);
-		} catch (IllegalBlockSizeException|BadPaddingException e) {
+		} catch (IllegalBlockSizeException | BadPaddingException e) {
 			throw new HopscotchException("Error when decrypting bytes", e);
 		}
 	}

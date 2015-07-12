@@ -1,4 +1,4 @@
-package charliek.hopscotch.docproxy.dto;
+package charliek.hopscotch.docproxy.config;
 
 public interface GithubCredentials {
 	public String getClientId();

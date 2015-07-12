@@ -1,4 +1,4 @@
-package charliek.hopscotch.docproxy.services;
+package charliek.hopscotch.docproxy.github.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.netty.channel.ChannelInitializer;

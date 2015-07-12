@@ -1,13 +1,13 @@
-package charliek.hopscotch.docproxy.handlers;
+package charliek.hopscotch.docproxy.github;
 
-import charliek.hopscotch.docproxy.dto.AppConfig;
-import charliek.hopscotch.docproxy.dto.S3Host;
+import charliek.hopscotch.docproxy.config.AppConfig;
+import charliek.hopscotch.docproxy.config.S3Host;
 import charliek.hopscotch.docproxy.exceptions.HopscotchException;
 import charliek.hopscotch.docproxy.rx.EventLoopScheduler;
-import charliek.hopscotch.docproxy.services.GithubService;
-import charliek.hopscotch.docproxy.services.github.AuthCookie;
-import charliek.hopscotch.docproxy.services.github.Org;
-import charliek.hopscotch.docproxy.services.github.User;
+import charliek.hopscotch.docproxy.github.services.GithubService;
+import charliek.hopscotch.docproxy.github.dto.AuthCookie;
+import charliek.hopscotch.docproxy.github.dto.Org;
+import charliek.hopscotch.docproxy.github.dto.User;
 import charliek.hopscotch.docproxy.utils.ObjectMapperBuilder;
 import charliek.hopscotch.docproxy.utils.RenderUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
